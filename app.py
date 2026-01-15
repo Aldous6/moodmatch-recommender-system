@@ -8,10 +8,10 @@ import html
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import normalize
 
-# =============================================================================
+
 # 1. CONFIGURACIÓN E INTERFAZ
 # =============================================================================
-st.set_page_config(page_title="MoodMatch", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="MoodMatch", layout="wide", initial_sidebar_state="collapsed")
 
 PREMIUM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap');
@@ -42,10 +42,43 @@ html, body, [data-testid="stAppViewContainer"]{
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif !important;
 }
 
-#MainMenu, footer, header { visibility: hidden; }
-[data-testid="stToolbar"] { visibility: hidden; height: 0; }
-[data-testid="stSidebarCollapsedControl"]{ display: block !important; visibility: visible !important; color: var(--mm-accent) !important; }
+/* Oculta menú principal y footer */
+#MainMenu, footer { visibility: hidden; }
 
+/* ✅ ARREGLO 1: Se eliminó la línea que ocultaba el stToolbar para no perder el botón */
+
+/* HEADER = glass */
+[data-testid="stHeader"]{
+  background: rgba(7,8,12,0.28) !important;
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+/* ✅ ARREGLO 2: Botón para re-abrir sidebar (Soporte doble selector) */
+[data-testid="stSidebarCollapsedControl"], [data-testid="collapsedControl"] {
+  position: fixed !important;
+  top: 12px !important;
+  left: 12px !important;
+  z-index: 100000 !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 999px !important;
+
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.35) !important;
+
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Main container spacing */
 section.main > div.block-container{ padding-top: 2.2rem; max-width: 1240px; }
 
 h1, h2, h3, h4{ font-family: Manrope, Inter, sans-serif !important; letter-spacing: -0.02em; }
@@ -53,45 +86,78 @@ h1{ font-size: 2.35rem !important; }
 p, li{ color: var(--mm-text) !important; }
 small, .stCaption{ color: var(--mm-muted-2) !important; }
 
-[data-testid="stSidebar"]{ background: rgba(255,255,255,0.028) !important; border-right: 1px solid var(--mm-border) !important; }
-[data-testid="stSidebar"] .stMarkdown, [data-testid="stSidebar"] label{ color: var(--mm-muted) !important; }
+/* Sidebar glass */
+[data-testid="stSidebar"]{
+  background: rgba(255,255,255,0.028) !important;
+  border-right: 1px solid var(--mm-border) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+[data-testid="stSidebar"] .stMarkdown,
+[data-testid="stSidebar"] label{ color: var(--mm-muted) !important; }
 
-[data-baseweb="select"] > div, [data-baseweb="input"] > div, div[data-baseweb="slider"]{
-  background: rgba(255,255,255,0.035) !important; border: 1px solid rgba(255,255,255,0.12) !important; border-radius: 14px !important;
+/* Inputs */
+[data-baseweb="select"] > div,
+[data-baseweb="input"] > div,
+div[data-baseweb="slider"]{
+  background: rgba(255,255,255,0.035) !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+  border-radius: 14px !important;
 }
 label{ color: var(--mm-muted) !important; }
 
+/* Buttons */
 div.stButton > button{
-  border-radius: 999px !important; border: 1px solid rgba(255,255,255,0.14) !important;
-  background: rgba(255,255,255,0.05) !important; color: var(--mm-text) !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(255,255,255,0.14) !important;
+  background: rgba(255,255,255,0.05) !important;
+  color: var(--mm-text) !important;
   transition: transform .12s ease;
 }
-div.stButton > button:hover{ transform: translateY(-1px); background: rgba(255,255,255,0.07) !important; }
+div.stButton > button:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,0.07) !important;
+}
 div.stButton > button[kind="primary"]{
   background: linear-gradient(180deg, rgba(91,124,255,0.98) 0%, rgba(91,124,255,0.78) 100%) !important;
   border-color: rgba(91,124,255,0.75) !important;
 }
 
+/* Cards */
 div[data-testid="stVerticalBlockBorderWrapper"]{
   background: linear-gradient(180deg, rgba(255,255,255,0.055) 0%, rgba(255,255,255,0.025) 100%) !important;
-  border: 1px solid var(--mm-border) !important; border-radius: var(--mm-radius-lg) !important;
+  border: 1px solid var(--mm-border) !important;
+  border-radius: var(--mm-radius-lg) !important;
   box-shadow: var(--mm-shadow-soft) !important;
 }
 
-[data-testid="stImage"] img{ border-radius: 18px !important; box-shadow: 0 18px 60px rgba(0,0,0,0.50) !important; }
-hr{ border: none !important; height: 1px !important; background: rgba(255,255,255,0.10) !important; margin: 18px 0 !important; }
+[data-testid="stImage"] img{
+  border-radius: 18px !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,0.50) !important;
+}
 
+hr{
+  border: none !important;
+  height: 1px !important;
+  background: rgba(255,255,255,0.10) !important;
+  margin: 18px 0 !important;
+}
+
+/* Hero */
 .kicker{ color: var(--mm-muted-2); text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.76rem; font-weight: 700; }
 .small-muted{ color: var(--mm-muted); font-size: 0.98rem; }
 .hero{
-  padding: 26px 26px; border-radius: var(--mm-radius-lg); border: 1px solid rgba(255,255,255,0.12);
+  padding: 26px 26px;
+  border-radius: var(--mm-radius-lg);
+  border: 1px solid rgba(255,255,255,0.12);
   background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
-  box-shadow: var(--mm-shadow); margin-bottom: 2.0rem;
+  box-shadow: var(--mm-shadow);
+  margin-bottom: 2.0rem;
 }
 .hero .hero-top{ display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .hero .pill{ padding: 7px 10px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); font-size: 0.82rem; }
 
-/* RAILS */
+/* Rails */
 .mm-section-head{ display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; margin: 0.25rem 0 0.2rem 0; }
 .mm-section-title{ font-family: Manrope, sans-serif !important; letter-spacing:-0.02em; font-size: 1.15rem; margin: 0; }
 .mm-section-sub{ color: var(--mm-muted-2); font-size: 0.92rem; margin: 0; }
@@ -102,8 +168,10 @@ hr{ border: none !important; height: 1px !important; background: rgba(255,255,25
 
 .mm-card{ flex: 0 0 auto; width: 172px; scroll-snap-align: start; text-decoration:none !important; color: var(--mm-text) !important; }
 .mm-poster{
-  width: 172px; aspect-ratio: 2 / 3; border-radius: 18px; overflow: hidden;
-  border: 1px solid rgba(255,255,255,0.10); background: rgba(255,255,255,0.03);
+  width: 172px; aspect-ratio: 2 / 3;
+  border-radius: 18px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
   position: relative; transition: transform .14s ease;
 }
 .mm-poster img{ width:100%; height:100%; object-fit: cover; display:block; }
@@ -113,14 +181,148 @@ hr{ border: none !important; height: 1px !important; background: rgba(255,255,25
 .mm-title{ font-weight: 800; font-size: 0.9rem; line-height: 1.1; margin-bottom: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
 .mm-subline{ color: rgba(255,255,255,0.7); font-size: 0.75rem; white-space: nowrap; overflow:hidden; text-overflow: ellipsis; }
 
+/* Details */
 .mm-details{
-  border-radius: var(--mm-radius-lg); border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.03); padding: 20px; margin: 10px 0 20px 0;
+  border-radius: var(--mm-radius-lg);
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  padding: 20px; margin: 10px 0 20px 0;
 }
 .mm-reason{ border-left: 2px solid var(--mm-accent); padding-left: 10px; margin: 6px 0; color: var(--mm-muted); font-size: 0.9rem; }
 .mm-chip{ padding: 6px 12px; background: rgba(255,255,255,0.05); border-radius: 99px; font-size: 0.8rem; color: var(--mm-muted); }
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 900px){
+  section.main > div.block-container{
+    padding: 1.1rem 0.9rem 2.2rem 0.9rem;
+    max-width: 100%;
+  }
+  h1{ font-size: 1.9rem !important; }
+  .hero{ padding: 18px 18px; margin-bottom: 1.2rem; }
+  .mm-card{ width: 140px; }
+  .mm-poster{ width: 140px; border-radius: 16px; }
+}
 """
+
+# ✅ ARREGLO 3: Inyección única del CSS
 st.markdown(f"<style>{PREMIUM_CSS}</style>", unsafe_allow_html=True)
+
+# Lógica del Backdrop (Mantenida del original)
+st.markdown("""
+<style>
+/* Backdrop */
+#mm-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s ease;
+  z-index: 99990;
+}
+
+/* Cuando el sidebar está abierto en móvil, activamos backdrop + blur del main */
+@media (max-width: 900px){
+  html.mm-sidebar-open #mm-backdrop{ opacity: 1; pointer-events: auto; }
+  html.mm-sidebar-open section.main{ filter: blur(6px); }
+}
+</style>
+
+<div id="mm-backdrop"></div>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const backdrop = document.getElementById("mm-backdrop");
+
+  const isSidebarOpen = () => {
+    const sb = document.querySelector('[data-testid="stSidebar"]');
+    if (!sb) return false;
+
+    // Streamlit suele manejar aria-expanded en algunos builds.
+    const aria = sb.getAttribute("aria-expanded");
+    if (aria === "true") return true;
+    if (aria === "false") return false;
+
+    // Fallback: en móvil, si está visible y ocupa ancho, asumimos abierto
+    const st = window.getComputedStyle(sb);
+    const w = parseFloat(st.width || "0");
+    const visible = st.display !== "none" && st.visibility !== "hidden";
+    const mobile = window.matchMedia("(max-width: 900px)").matches;
+    return mobile && visible && w > 80;
+  };
+
+  const update = () => {
+    if (isSidebarOpen()) root.classList.add("mm-sidebar-open");
+    else root.classList.remove("mm-sidebar-open");
+  };
+
+  // Observa cambios en el DOM (Streamlit re-render)
+  new MutationObserver(update).observe(document.body, { childList: true, subtree: true, attributes: true });
+  window.addEventListener("resize", update);
+  backdrop?.addEventListener("click", () => root.classList.remove("mm-sidebar-open"));
+
+  setTimeout(update, 0);
+})();
+</script>
+""", unsafe_allow_html=True)
+
+
+# ⭐ EXTRA: Botón flotante independiente (FAB)
+# Esto asegura que si Streamlit cambia los IDs de nuevo, tú sigues teniendo un botón funcional.
+st.markdown("""
+<style>
+#mm-fab{
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100001;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  box-shadow: 0 12px 35px rgba(0,0,0,0.35);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  transition: transform 0.1s ease;
+}
+#mm-fab:hover{
+  transform: scale(1.05);
+  background: rgba(255,255,255,0.1);
+}
+</style>
+
+<button id="mm-fab" title="Menu">☰</button>
+
+<script>
+(() => {
+  const clickToggle = () => {
+    // Intenta encontrar el botón nativo de Streamlit (ambas versiones)
+    const btn =
+      document.querySelector('[data-testid="stSidebarCollapsedControl"] button')
+      || document.querySelector('[data-testid="collapsedControl"] button')
+      || document.querySelector('[data-testid="stSidebarCollapsedControl"]'); // A veces el click va al div contenedor
+
+    if (btn) {
+        btn.click();
+    } else {
+        console.warn("MoodMatch: No se encontró el botón nativo del sidebar.");
+    }
+  };
+  
+  const fab = document.getElementById("mm-fab");
+  if(fab) fab.addEventListener("click", clickToggle);
+})();
+</script>
+""", unsafe_allow_html=True)
 
 # =============================================================================
 # 2. CONFIGURACIÓN
